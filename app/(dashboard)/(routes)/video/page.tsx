@@ -5,7 +5,7 @@ import axios from "axios";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import { toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { VideoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,12 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/ui/empty";
-// import { useProModal } from "@/hooks/use-pro-modal";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 import { formSchema } from "./constants";
 
 const VideoPage = () => {
   const router = useRouter();
+  const proModal = useProModal();
   const [video, setVideo] = useState<string>();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,7 +42,11 @@ const VideoPage = () => {
       setVideo(response.data[0]);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }
